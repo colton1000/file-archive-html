@@ -1,0 +1,12 @@
+from winwidgetkit import *
+app=WidgetApp(app_name='WinWidgetKit 0.8 Demo',default_color='#263653')
+AnalogClockWidget(app,widget_id='clock',x=10,y=10,show_numbers=True)
+StopwatchWidget(app,widget_id='stopwatch',x=270,y=10)
+CalendarWidget(app,widget_id='calendar',x=570,y=10)
+ShortcutWidget(app,widget_id='shortcut',x=10,y=340,label='Choose a file')
+FocusOrbWidget(app,widget_id='focus',x=270,y=340)
+MagicOrbWidget(app,widget_id='magic',x=530,y=340)
+NoteWidget(app,widget_id='notes',x=790,y=10,max_notes=8)
+WaterWidget(app,widget_id='water',x=10,y=550)
+OrbControllerWidget(app,widget_id='orb-controller',x=790,y=340)
+app.run()

@@ -1,0 +1,14 @@
+[build-system]
+requires=["setuptools>=68","wheel"]
+build-backend="setuptools.build_meta"
+[project]
+name="winwidgetkit"
+version="0.8.0"
+description="Movable persistent Windows desktop widgets and bouncing orbs"
+readme="README.md"
+requires-python=">=3.10"
+dependencies=[]
+[project.scripts]
+winwidgets-demo="winwidgetkit.demo:main"
+[tool.setuptools.packages.find]
+where=["src"]
