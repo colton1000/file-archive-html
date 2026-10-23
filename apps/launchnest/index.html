@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101b2d">
+    <meta name="description" content="Keep your favorite HTML pages close with LaunchNest.">
+    <title>LaunchNest — your HTML launchpad</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="LaunchNest home">
+        <span class="brand-mark" aria-hidden="true">L</span>
+        <span>LaunchNest</span>
+      </a>
+      <span class="topbar-note">Your little launchpad for the web</span>
+    </header>
+
+    <main class="layout">
+      <section class="intro" aria-labelledby="page-title">
+        <div class="intro-copy">
+          <p class="eyebrow"><span class="eyebrow-dot"></span> YOUR PAGES, READY WHEN YOU ARE</p>
+          <h1 id="page-title">A home for your<br><span>favorite HTML.</span></h1>
+          <p class="intro-description">Save pages here once, then preview or launch them whenever inspiration strikes.</p>
+        </div>
+
+        <label class="dropzone" id="dropZone" for="fileInput">
+          <span class="upload-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 15v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="dropzone-title">Drop HTML files here</span>
+          <span class="dropzone-hint">or <span class="browse-link">browse your device</span></span>
+          <span class="file-hint">.html and .htm files</span>
+          <input id="fileInput" type="file" accept=".html,.htm,text/html" multiple>
+        </label>
+      </section>
+
+      <div class="notice" id="notice" role="status" aria-live="polite"></div>
+
+      <section class="workspace" aria-label="Saved pages and preview">
+        <div class="library">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">YOUR COLLECTION</p>
+              <h2>Saved pages <span class="count" id="pageCount">0</span></h2>
+            </div>
+            <label class="search-box">
+              <span class="visually-hidden">Search saved pages</span>
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4.2 4.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+              <input id="searchInput" type="search" placeholder="Find a page…" autocomplete="off">
+            </label>
+          </div>
+          <div class="page-list" id="pageList" aria-live="polite"></div>
+        </div>
+
+        <aside class="preview-panel" aria-label="Page preview">
+          <div class="preview-heading">
+            <div>
+              <p class="eyebrow">QUICK LOOK</p>
+              <h2 id="previewTitle">Preview</h2>
+            </div>
+            <div class="preview-actions" id="previewActions" hidden>
+              <button class="icon-button" id="deleteButton" type="button" aria-label="Delete saved page" title="Delete page">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4.5 7h15m-10-2h5l1 2m-8 0 .7 12h8.6l.7-12m-7 3v6m4-6v6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="launch-button" id="launchButton" type="button">
+                Launch page <span aria-hidden="true">↗</span>
+              </button>
+            </div>
+          </div>
+          <div class="preview-content">
+            <div class="preview-empty" id="previewEmpty">
+              <span class="preview-empty-icon" aria-hidden="true">↗</span>
+              <h3>Pick a page to preview</h3>
+              <p>Your selected HTML will appear here, ready for a quick look or a full launch.</p>
+            </div>
+            <iframe id="previewFrame" title="Selected HTML page preview" sandbox="allow-scripts" hidden></iframe>
+          </div>
+          <p class="preview-footnote">Preview runs in an isolated frame.</p>
+        </aside>
+      </section>
+      <p class="storage-note"><span aria-hidden="true">◈</span> Your pages are stored in this browser on this device.</p>
+    </main>
+  </body>
+</html>
