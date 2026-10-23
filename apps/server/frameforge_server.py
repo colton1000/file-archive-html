@@ -17,7 +17,10 @@ def find_html(directory: Path | None = None) -> Path:
     files = sorted(root.glob("*.html"), key=lambda p: p.name.lower())
     if not files:
         raise SystemExit(f"No HTML file found in {root}")
+
     preferred = [p for p in files if HTML_HINT in p.stem.lower()]
+    if not preferred:
+        preferred = [p for p in files if "frameforge" in p.stem.lower()]
     return preferred[0] if preferred else files[0]
 
 
