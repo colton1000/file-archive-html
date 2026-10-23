@@ -1,6 +1,0 @@
-# HTML project local cache
-.cache/
-*.tmp
-*.bak
-*.local
-.DS_Store
