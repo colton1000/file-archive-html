@@ -1,0 +1,14 @@
+{
+  "name": "super-projects",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A local-first project dashboard with Node.js account authentication",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test"
+  }
+}
