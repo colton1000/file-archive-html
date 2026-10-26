@@ -36,3 +36,5 @@ npm test
 Project lists are saved in this browser's local storage, separately for each signed-in username. They are not uploaded or synchronized to the server or other devices. Public/private is still descriptive metadata and does not publish or protect projects.
 
 The server intentionally binds to `127.0.0.1` and accepts localhost requests only. This is a local development app, not a production hosting setup. Do not expose it to the internet as-is; a public deployment needs HTTPS, secure-cookie configuration, production-grade persistent storage, backups, and operational protections.
+## download nodejs
+the download for nodejs is [here](https://nodejs.org/en/download) nodejs can be used for many things like my app.
