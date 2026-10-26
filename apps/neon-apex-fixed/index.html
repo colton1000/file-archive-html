@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <title>Neon Apex: Turbo Circuit</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div><p class="eyebrow">ARCADE CIRCUIT</p><h1>NEON <span>APEX</span></h1></div>
+      <div class="help"><kbd>WASD</kbd> / <kbd>ARROWS</kbd> Drive &nbsp; <kbd>SPACE</kbd> Drift &nbsp; <kbd>SHIFT</kbd> Use item &nbsp; <kbd>P</kbd> Pause</div>
+    </header>
+
+    <section id="gameWrap" aria-label="Neon Apex racing game">
+      <canvas id="gameCanvas" width="1200" height="720" tabindex="0"></canvas>
+      <div id="hud">
+        <div class="hud-card position"><small>POSITION</small><strong id="position">1 / 6</strong></div>
+        <div class="hud-card"><small>LAP</small><strong id="lap">1 / 3</strong></div>
+        <div class="hud-card wide"><small>TIME</small><strong id="time">00:00.000</strong><span id="best">BEST --:--.---</span></div>
+        <div class="hud-card item"><small>ITEM</small><strong id="item">EMPTY</strong></div>
+        <div class="speed"><strong id="speed">0</strong><span>KM/H</span><div class="boost"><i id="boostFill"></i></div></div>
+      </div>
+      <div id="countdown" class="center-message"></div>
+      <div id="toast"></div>
+      <div id="pausePanel" class="overlay hidden"><div class="panel"><p class="eyebrow">RACE SUSPENDED</p><h2>PAUSED</h2><button id="resumeBtn" type="button">RESUME</button><button id="restartPauseBtn" type="button" class="ghost">RESTART</button></div></div>
+      <div id="startPanel" class="overlay"><div class="panel hero"><p class="eyebrow">WELCOME, RACER</p><h2>NEON APEX</h2><p>Race five rivals, chain drifts for boost, collect items, and take first place.</p><div class="settings"><label>Laps <select id="lapSelect"><option>2</option><option selected>3</option><option>5</option></select></label><label>Difficulty <select id="difficulty"><option value="0.9">Chill</option><option value="1" selected>Arcade</option><option value="1.12">Pro</option></select></label></div><button id="startBtn" type="button">START RACE</button></div></div>
+      <div id="finishPanel" class="overlay hidden"><div class="panel hero"><p class="eyebrow">CHECKERED FLAG</p><h2 id="finishTitle">FINISHED!</h2><div id="results"></div><button id="againBtn" type="button">RACE AGAIN</button></div></div>
+    </section>
+    <footer><button id="restartBtn" type="button" class="ghost small">Restart</button><button id="muteBtn" type="button" class="ghost small">Sound: On</button><span>Tip: drift through corners to charge turbo.</span></footer>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
