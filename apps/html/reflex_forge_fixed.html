@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reflex Forge - Mouse & Keyboard Skill Tester</title>
+  <style>
+    :root {
+      --bg: #070b16;
+      --panel: rgba(18, 27, 52, 0.88);
+      --panel-2: #101a34;
+      --text: #f4f7ff;
+      --muted: #9aa8c7;
+      --cyan: #44e7ff;
+      --purple: #a86cff;
+      --green: #51f5a5;
+      --red: #ff5d78;
+      --yellow: #ffd866;
+      --border: rgba(134, 168, 255, 0.2);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      min-height: 100%;
+      margin: 0;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 18% 10%, rgba(68, 231, 255, 0.13), transparent 28%),
+        radial-gradient(circle at 85% 18%, rgba(168, 108, 255, 0.16), transparent 28%),
+        linear-gradient(145deg, #050812, #0a1021 55%, #080c19);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.14;
+      background-image:
+        linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size: 36px 36px;
+      mask-image: linear-gradient(to bottom, black, transparent 80%);
+    }
+
+    button { font: inherit; }
+
+    .app {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 32px 0 38px;
+    }
+
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      color: var(--cyan);
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 4px 0 5px;
+      font-size: clamp(2rem, 5vw, 4rem);
+      line-height: .95;
+      letter-spacing: -.055em;
+    }
+
+    .subtitle { margin: 0; color: var(--muted); }
+
+    .best-box {
+      min-width: 180px;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: rgba(9, 15, 31, .7);
+      color: var(--muted);
+      text-align: right;
+      backdrop-filter: blur(10px);
+    }
+
+    .best-box strong { color: var(--yellow); }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .tab, .action {
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      color: var(--text);
+      background: rgba(16, 26, 52, .7);
+      cursor: pointer;
+      transition: .18s ease;
+    }
+
+    .tab {
+      padding: 14px 16px;
+      font-weight: 800;
+    }
+
+    .tab:hover, .tab.active { transform: translateY(-1px); border-color: var(--cyan); }
+    .tab.active { background: linear-gradient(135deg, rgba(68,231,255,.18), rgba(168,108,255,.15)); box-shadow: 0 0 25px rgba(68,231,255,.07); }
+
+    .settings {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;
+      padding: 12px; border: 1px solid var(--border); border-radius: 15px;
+      background: rgba(9,15,31,.68); backdrop-filter: blur(10px);
+    }
+    .setting-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .setting-label { color: var(--muted); font-size: .75rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+    .choice { padding: 8px 11px; border: 1px solid var(--border); border-radius: 9px; color: var(--text); background: rgba(255,255,255,.04); cursor: pointer; font-weight: 800; }
+    .choice.active { color: #07111d; border-color: var(--cyan); background: var(--cyan); box-shadow: 0 0 17px rgba(68,231,255,.22); }
+    .music-upload { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+    .music-name { color:var(--muted); font-size:.78rem; max-width:190px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .end-run { position:absolute; z-index:15; right:16px; bottom:16px; padding:11px 16px; border:1px solid rgba(255,93,120,.65); border-radius:11px; color:white; background:rgba(105,20,39,.88); cursor:pointer; font-weight:900; box-shadow:0 8px 24px rgba(0,0,0,.3); }
+    .end-run:hover { background:var(--red); color:#18030a; transform:translateY(-1px); }
+    .countdown-number { font-size: clamp(5rem,18vw,11rem); font-weight: 1000; line-height: 1; color: var(--cyan); text-shadow: 0 0 45px rgba(68,231,255,.6); animation: countPulse .72s ease-out; }
+    @keyframes countPulse { from { transform: scale(.55); opacity:.25; } to { transform: scale(1); opacity:1; } }
+    .panel {
+      position: relative;
+      overflow: hidden;
+      min-height: 640px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: linear-gradient(145deg, rgba(17, 26, 51, .91), rgba(7, 12, 25, .94));
+      box-shadow: 0 22px 60px rgba(0,0,0,.35);
+      backdrop-filter: blur(14px);
+    }
+
+    .hud {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      padding: 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(5, 9, 20, .45);
+    }
+
+    .stat {
+      padding: 9px 12px;
+      border-radius: 11px;
+      background: rgba(255,255,255,.035);
+      text-align: center;
+    }
+
+    .stat span { display: block; color: var(--muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; }
+    .stat strong { display: block; margin-top: 2px; font-size: 1.08rem; }
+
+    .timer-track { height: 5px; background: rgba(255,255,255,.07); }
+    .timer-bar { width: 100%; height: 100%; transform-origin: left; background: linear-gradient(90deg, var(--cyan), var(--green)); }
+    .timer-bar.danger { background: linear-gradient(90deg, var(--yellow), var(--red)); }
+
+    .arena {
+      position: relative;
+      min-height: 540px;
+      user-select: none;
+      overflow: hidden;
+    }
+
+    .target {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 3px solid rgba(255,255,255,.85);
+      border-radius: 50%;
+      color: white;
+      background: radial-gradient(circle, #fff 0 10%, var(--red) 11% 29%, #fff 30% 42%, var(--cyan) 43% 62%, #17203f 63%);
+      box-shadow: 0 0 25px rgba(68,231,255,.55), inset 0 0 12px rgba(255,255,255,.35);
+      cursor: crosshair;
+      animation: spawn .16s ease-out;
+      touch-action: manipulation;
+    }
+
+    .target:hover { filter: brightness(1.14); }
+    .target:active { transform: scale(.9); }
+
+    @keyframes spawn { from { opacity: 0; transform: scale(.35) rotate(-25deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
+
+    .keyboard-stage {
+      min-height: 540px;
+      display: grid;
+      place-items: center;
+      padding: 26px;
+      text-align: center;
+    }
+
+    .key-wrap { width: min(620px, 100%); }
+    .prompt { color: var(--muted); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .keycap {
+      display: grid;
+      place-items: center;
+      width: min(250px, 55vw);
+      aspect-ratio: 1;
+      margin: 27px auto;
+      border: 3px solid rgba(255,255,255,.72);
+      border-bottom-width: 11px;
+      border-radius: 28px;
+      background: linear-gradient(145deg, #263860, #101a34);
+      box-shadow: 0 25px 45px rgba(0,0,0,.38), inset 0 0 30px rgba(68,231,255,.11);
+      font-size: clamp(3rem, 11vw, 7rem);
+      font-weight: 950;
+      text-transform: uppercase;
+      text-shadow: 0 0 25px rgba(68,231,255,.55);
+    }
+
+    .sequence {
+      height: 30px;
+      color: var(--green);
+      font-weight: 800;
+      letter-spacing: .16em;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 90px 0 0;
+      z-index: 20;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(5, 8, 18, .82);
+      backdrop-filter: blur(9px);
+    }
+
+    .card { width: min(520px, 100%); text-align: center; }
+    .mode-icon { font-size: 3.2rem; }
+    .card h2 { margin: 5px 0 10px; font-size: clamp(1.8rem, 5vw, 3rem); }
+    .card p { color: var(--muted); line-height: 1.6; }
+
+    .action {
+      padding: 13px 23px;
+      border-color: transparent;
+      background: linear-gradient(110deg, var(--cyan), #7287ff, var(--purple));
+      color: #06101d;
+      font-weight: 950;
+      box-shadow: 0 10px 30px rgba(68,231,255,.2);
+    }
+    .action:hover { transform: translateY(-2px) scale(1.02); filter: saturate(1.2); }
+
+    .hidden { display: none !important; }
+    .flash-good { animation: good .2s; }
+    .flash-bad { animation: bad .22s; }
+    @keyframes good { 50% { box-shadow: inset 0 0 80px rgba(81,245,165,.32); } }
+    @keyframes bad { 50% { box-shadow: inset 0 0 95px rgba(255,93,120,.35); } }
+
+    .pop {
+      position: absolute;
+      z-index: 10;
+      color: var(--green);
+      font-weight: 900;
+      pointer-events: none;
+      animation: pop .55s ease-out forwards;
+    }
+    @keyframes pop { to { transform: translateY(-35px) scale(1.25); opacity: 0; } }
+
+    footer { padding: 14px 5px 0; color: #7181a5; font-size: .78rem; text-align: center; }
+
+    @media (max-width: 700px) {
+      header { align-items: start; flex-direction: column; }
+      .best-box { width: 100%; text-align: left; }
+      .hud { grid-template-columns: repeat(3, 1fr); }
+      .stat:nth-child(4), .stat:nth-child(5) { grid-column: span 1; }
+      .settings {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;
+      padding: 12px; border: 1px solid var(--border); border-radius: 15px;
+      background: rgba(9,15,31,.68); backdrop-filter: blur(10px);
+    }
+    .setting-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .setting-label { color: var(--muted); font-size: .75rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+    .choice { padding: 8px 11px; border: 1px solid var(--border); border-radius: 9px; color: var(--text); background: rgba(255,255,255,.04); cursor: pointer; font-weight: 800; }
+    .choice.active { color: #07111d; border-color: var(--cyan); background: var(--cyan); box-shadow: 0 0 17px rgba(68,231,255,.22); }
+    .countdown-number { font-size: clamp(5rem,18vw,11rem); font-weight: 1000; line-height: 1; color: var(--cyan); text-shadow: 0 0 45px rgba(68,231,255,.6); animation: countPulse .72s ease-out; }
+    @keyframes countPulse { from { transform: scale(.55); opacity:.25; } to { transform: scale(1); opacity:1; } }
+    .panel { min-height: 610px; }
+      .arena, .keyboard-stage { min-height: 500px; }
+      .overlay { inset: 138px 0 0; }
+      .settings { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div>
+        <div class="eyebrow">Reaction training system</div>
+        <h1>REFLEX FORGE</h1>
+        <p class="subtitle">Train accuracy, reaction speed, and keyboard recognition.</p>
+      </div>
+      <div class="best-box">Best current setup: <strong id="bestScore">0</strong></div>
+    </header>
+
+    <nav class="tabs" aria-label="Test mode">
+      <button class="tab active" id="mouseTab">🎯 Mouse Test</button>
+      <button class="tab" id="keyboardTab">⌨️ Keyboard Test</button>
+    </nav>
+
+    <section class="settings" aria-label="Game settings">
+      <div class="setting-group">
+        <span class="setting-label">Run mode</span>
+        <button class="choice active run-choice" data-run="standard">Standard</button>
+        <button class="choice run-choice" data-run="endless">∞ Endless</button>
+      </div>
+      <div class="setting-group">
+        <span class="setting-label">Music</span>
+        <label class="choice" for="musicUpload">♫ Upload Music</label>
+        <input class="music-upload" id="musicUpload" type="file" accept="audio/*">
+        <button class="choice" id="clearMusic" type="button">Clear</button>
+        <span class="music-name" id="musicName">No music selected</span>
+      </div>
+      <div class="setting-group">
+        <span class="setting-label">Difficulty</span>
+        <button class="choice diff-choice" data-diff="1">Chill</button>
+        <button class="choice diff-choice" data-diff="2">Easy</button>
+        <button class="choice diff-choice active" data-diff="3">Normal</button>
+        <button class="choice diff-choice" data-diff="4">Hard</button>
+        <button class="choice diff-choice" data-diff="5">Extreme</button>
+      </div>
+    </section>
+
+    <section class="panel" id="panel">
+      <div class="hud">
+        <div class="stat"><span>Score</span><strong id="score">0</strong></div>
+        <div class="stat"><span>Level</span><strong id="level">1</strong></div>
+        <div class="stat"><span>Lives</span><strong id="lives">❤❤❤</strong></div>
+        <div class="stat"><span>Accuracy</span><strong id="accuracy">100%</strong></div>
+        <div class="stat"><span>Time</span><strong id="timeText">2.50s</strong></div>
+      </div>
+      <div class="timer-track"><div class="timer-bar" id="timerBar"></div></div>
+      <button class="end-run hidden" id="endRunBtn" type="button">■ End Run</button>
+      <audio id="customMusic" loop preload="metadata"></audio>
+
+      <div class="arena" id="mouseArena"></div>
+
+      <div class="keyboard-stage hidden" id="keyboardStage" tabindex="0">
+        <div class="key-wrap">
+          <div class="prompt" id="keyPrompt">Press this key</div>
+          <div class="keycap" id="keycap">A</div>
+          <div class="sequence" id="sequence"></div>
+          <p class="subtitle">Keep this page focused. Wrong keys cost a life.</p>
+        </div>
+      </div>
+
+      <div class="overlay" id="overlay">
+        <div class="card">
+          <div class="mode-icon" id="modeIcon">🎯</div>
+          <h2 id="overlayTitle">Mouse Skill Test</h2>
+          <p id="overlayText">Click each target before time runs out. Targets become smaller, time gets shorter, and later levels require more hits.</p>
+          <button class="action" id="startBtn">Start Test</button>
+        </div>
+      </div>
+    </section>
+    <footer>Offline single-file trainer • 5 difficulties • Standard and endless modes • Local high scores</footer>
+  </main>
+
+  <script>
+    (() => {
+      const el = id => document.getElementById(id);
+      const mouseArena = el('mouseArena');
+      const keyboardStage = el('keyboardStage');
+      const overlay = el('overlay');
+      const timerBar = el('timerBar');
+      const panel = el('panel');
+
+      let mode = 'mouse';
+      let runMode = 'standard';
+      let difficultySetting = 3;
+      let countingDown = false;
+      const difficultyProfiles = {
+        1: { name:'Chill', time:1.55, shrink:.55, score:.65 },
+        2: { name:'Easy', time:1.25, shrink:.78, score:.82 },
+        3: { name:'Normal', time:1.00, shrink:1.00, score:1.00 },
+        4: { name:'Hard', time:.78, shrink:1.22, score:1.30 },
+        5: { name:'Extreme', time:.60, shrink:1.48, score:1.70 }
+      };
+      let running = false;
+      let score = 0;
+      let level = 1;
+      let lives = 3;
+      let attempts = 0;
+      let successes = 0;
+      let hitsInLevel = 0;
+      let currentKey = '';
+      let deadline = 0;
+      let duration = 2500;
+      let timerId = 0;
+      let animId = 0;
+      let target = null;
+
+      const keysByLevel = [
+        'asdfjkl;',
+        'qweruiopasdfjkl;',
+        'qwertyuiopasdfghjklzxcvbnm',
+        'qwertyuiopasdfghjklzxcvbnm1234567890',
+        'qwertyuiopasdfghjklzxcvbnm1234567890[];,.\\/'
+      ];
+
+      const memoryScores = Object.create(null);
+      const customMusic = el('customMusic');
+      let musicObjectUrl = '';
+      function safeStorageGet(key) {
+        try { return window.localStorage.getItem(key); }
+        catch (error) { return memoryScores[key] ?? null; }
+      }
+      function safeStorageSet(key, value) {
+        memoryScores[key] = String(value);
+        try { window.localStorage.setItem(key, String(value)); } catch (error) { /* sandbox fallback */ }
+      }
+      function bestKey() { return `reflexForgeBest_${mode}_${runMode}_d${difficultySetting}`; }
+      function getBest() { return Number(safeStorageGet(bestKey()) || 0); }
+      function setBest() {
+        if (score > getBest()) safeStorageSet(bestKey(), score);
+        el('bestScore').textContent = getBest().toLocaleString();
+      }
+      function startMusic() {
+        if (!customMusic.src) return;
+        customMusic.currentTime = 0;
+        customMusic.play().catch(() => {});
+      }
+      function stopMusic() {
+        customMusic.pause();
+        customMusic.currentTime = 0;
+      }
+
+      function updateHud() {
+        el('score').textContent = score.toLocaleString();
+        el('level').textContent = level;
+        el('lives').textContent = runMode === 'endless' ? '∞' : '❤'.repeat(lives) + '♡'.repeat(3 - lives);
+        el('accuracy').textContent = attempts ? Math.round(successes / attempts * 100) + '%' : '100%';
+        el('timeText').textContent = (duration / 1000).toFixed(2) + 's';
+      }
+
+      function configureMode(nextMode) {
+        if (running) endGame('Test ended');
+        el('endRunBtn').classList.add('hidden');
+        mode = nextMode;
+        el('mouseTab').classList.toggle('active', mode === 'mouse');
+        el('keyboardTab').classList.toggle('active', mode === 'keyboard');
+        mouseArena.classList.toggle('hidden', mode !== 'mouse');
+        keyboardStage.classList.toggle('hidden', mode !== 'keyboard');
+        el('modeIcon').textContent = mode === 'mouse' ? '🎯' : '⌨️';
+        el('overlayTitle').textContent = mode === 'mouse' ? 'Mouse Skill Test' : 'Keyboard Skill Test';
+        el('overlayText').textContent = mode === 'mouse'
+          ? 'Click each target before time runs out. Targets become smaller, time gets shorter, and later levels require more hits.'
+          : 'Press the displayed key before time runs out. The key pool expands and the response time becomes shorter as you level up.';
+        el('startBtn').textContent = 'Start Test';
+        overlay.classList.remove('hidden');
+        setBest();
+      }
+
+      function difficulty() {
+        const profile = difficultyProfiles[difficultySetting];
+        const base = (mode === 'mouse' ? 2450 : 2200) * profile.time;
+        const minimum = (mode === 'mouse' ? 470 : 390) * Math.max(.72, profile.time);
+        const normalDrop = mode === 'mouse' ? 135 : 120;
+        const progressionDrop = runMode === 'endless' ? normalDrop * .42 : normalDrop;
+        duration = Math.max(minimum, base - (level - 1) * progressionDrop * profile.shrink);
+        return duration;
+      }
+
+      async function startGame() {
+        if (countingDown) return;
+        clearRound();
+        startMusic();
+        score = 0; level = 1; lives = 3; attempts = 0; successes = 0; hitsInLevel = 0;
+        running = false; countingDown = true;
+        overlay.classList.remove('hidden');
+        el('startBtn').classList.add('hidden');
+        el('overlayText').textContent = `${difficultyProfiles[difficultySetting].name} • ${runMode === 'endless' ? 'Endless' : 'Standard'}`;
+        for (const value of ['3','2','1','GO!']) {
+          el('overlayTitle').innerHTML = `<span class="countdown-number">${value}</span>`;
+          await new Promise(resolve => setTimeout(resolve, value === 'GO!' ? 520 : 760));
+        }
+        countingDown = false; running = true;
+        el('endRunBtn').classList.toggle('hidden', runMode !== 'endless');
+        el('startBtn').classList.remove('hidden');
+        overlay.classList.add('hidden');
+        updateHud(); nextRound();
+        if (mode === 'keyboard') keyboardStage.focus();
+      }
+
+      function nextRound() {
+        if (!running) return;
+        clearRound();
+        difficulty();
+        if (mode === 'mouse') spawnTarget(); else showKey();
+        startTimer();
+        updateHud();
+      }
+
+      function hitsNeeded() { return Math.min(12, 4 + Math.floor(level * 0.75)); }
+
+      function successfulHit(event) {
+        if (!running) return;
+        attempts++; successes++; hitsInLevel++;
+        const speedBonus = Math.max(0, Math.ceil((deadline - performance.now()) / 15));
+        score += Math.round((100 + level * 20 + speedBonus) * difficultyProfiles[difficultySetting].score);
+        flash(true);
+        if (event && mode === 'mouse') makePop(event.clientX, event.clientY, `+${Math.round((100 + level * 20 + speedBonus) * difficultyProfiles[difficultySetting].score)}`);
+        if (hitsInLevel >= hitsNeeded()) {
+          level++;
+          hitsInLevel = 0;
+        }
+        nextRound();
+      }
+
+      function failedHit() {
+        if (!running) return;
+        attempts++;
+        if (runMode === 'standard') lives--;
+        flash(false); updateHud();
+        if (runMode === 'standard' && lives <= 0) endGame('Training complete'); else nextRound();
+      }
+
+      function spawnTarget() {
+        const profile = difficultyProfiles[difficultySetting];
+        const shrinkRate = (runMode === 'endless' ? 1.65 : 4) * profile.shrink;
+        const size = Math.max(runMode === 'endless' ? 38 : 32, 92 - (level - 1) * shrinkRate);
+        target = document.createElement('button');
+        target.className = 'target';
+        target.setAttribute('aria-label', 'Click target');
+        target.style.width = size + 'px';
+        target.style.height = size + 'px';
+        const rect = mouseArena.getBoundingClientRect();
+        const margin = 10;
+        const maxX = Math.max(margin, rect.width - size - margin);
+        const maxY = Math.max(margin, rect.height - size - margin);
+        target.style.left = (margin + Math.random() * (maxX - margin)) + 'px';
+        target.style.top = (margin + Math.random() * (maxY - margin)) + 'px';
+        target.addEventListener('pointerdown', e => { e.stopPropagation(); successfulHit(e); }, { once: true });
+        mouseArena.appendChild(target);
+      }
+
+      function showKey() {
+        const poolIndex = Math.min(keysByLevel.length - 1, Math.floor((level - 1) / 3));
+        const pool = keysByLevel[poolIndex];
+        currentKey = pool[Math.floor(Math.random() * pool.length)];
+        el('keycap').textContent = currentKey === ' ' ? 'SPACE' : currentKey;
+        el('keyPrompt').textContent = level >= 10 ? 'React fast!' : 'Press this key';
+        el('sequence').textContent = `ROUND ${attempts + 1} • ${hitsInLevel}/${hitsNeeded()} TO LEVEL UP`;
+      }
+
+      function startTimer() {
+        deadline = performance.now() + duration;
+        timerBar.classList.remove('danger');
+        cancelAnimationFrame(animId);
+        const tick = now => {
+          if (!running) return;
+          const remaining = Math.max(0, deadline - now);
+          const ratio = remaining / duration;
+          timerBar.style.transform = `scaleX(${ratio})`;
+          timerBar.classList.toggle('danger', ratio < .3);
+          el('timeText').textContent = (remaining / 1000).toFixed(2) + 's';
+          if (remaining <= 0) failedHit(); else animId = requestAnimationFrame(tick);
+        };
+        animId = requestAnimationFrame(tick);
+        timerId = setTimeout(() => {}, duration);
+      }
+
+      function clearRound() {
+        clearTimeout(timerId);
+        cancelAnimationFrame(animId);
+        if (target) { target.remove(); target = null; }
+      }
+
+      function endGame(title) {
+        running = false;
+        clearRound();
+        stopMusic();
+        el('endRunBtn').classList.add('hidden');
+        timerBar.style.transform = 'scaleX(0)';
+        setBest();
+        el('overlayTitle').textContent = title;
+        el('overlayText').innerHTML = `Final score: <strong>${score.toLocaleString()}</strong><br>Level reached: <strong>${level}</strong> • Accuracy: <strong>${attempts ? Math.round(successes / attempts * 100) : 100}%</strong>`;
+        el('startBtn').textContent = 'Play Again';
+        overlay.classList.remove('hidden');
+      }
+
+      function flash(good) {
+        const className = good ? 'flash-good' : 'flash-bad';
+        panel.classList.remove('flash-good', 'flash-bad');
+        void panel.offsetWidth;
+        panel.classList.add(className);
+      }
+
+      function makePop(x, y, text) {
+        const rect = panel.getBoundingClientRect();
+        const pop = document.createElement('div');
+        pop.className = 'pop';
+        pop.textContent = text;
+        pop.style.left = (x - rect.left) + 'px';
+        pop.style.top = (y - rect.top) + 'px';
+        panel.appendChild(pop);
+        setTimeout(() => pop.remove(), 600);
+      }
+
+      document.addEventListener('keydown', e => {
+        if (!running || mode !== 'keyboard' || e.repeat) return;
+        e.preventDefault();
+        if (e.key.toLowerCase() === currentKey.toLowerCase()) successfulHit(); else failedHit();
+      });
+
+      mouseArena.addEventListener('pointerdown', e => {
+        if (running && mode === 'mouse' && e.target === mouseArena) failedHit();
+      });
+
+      el('mouseTab').addEventListener('click', () => configureMode('mouse'));
+      el('keyboardTab').addEventListener('click', () => configureMode('keyboard'));
+      el('startBtn').addEventListener('click', startGame);
+      el('endRunBtn').addEventListener('click', () => {
+        if (running && runMode === 'endless') endGame('Endless run complete');
+      });
+      el('musicUpload').addEventListener('change', event => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        if (musicObjectUrl) URL.revokeObjectURL(musicObjectUrl);
+        musicObjectUrl = URL.createObjectURL(file);
+        customMusic.src = musicObjectUrl;
+        el('musicName').textContent = file.name;
+      });
+      el('clearMusic').addEventListener('click', () => {
+        stopMusic();
+        customMusic.removeAttribute('src');
+        customMusic.load();
+        if (musicObjectUrl) URL.revokeObjectURL(musicObjectUrl);
+        musicObjectUrl = '';
+        el('musicUpload').value = '';
+        el('musicName').textContent = 'No music selected';
+      });
+      document.querySelectorAll('.run-choice').forEach(btn => btn.addEventListener('click', () => {
+        if (running || countingDown) return;
+        runMode = btn.dataset.run;
+        document.querySelectorAll('.run-choice').forEach(x => x.classList.toggle('active', x === btn));
+        configureMode(mode);
+      }));
+      document.querySelectorAll('.diff-choice').forEach(btn => btn.addEventListener('click', () => {
+        if (running || countingDown) return;
+        difficultySetting = Number(btn.dataset.diff);
+        document.querySelectorAll('.diff-choice').forEach(x => x.classList.toggle('active', x === btn));
+        configureMode(mode);
+      }));
+      window.addEventListener('blur', () => {
+        if (running) deadline += 700;
+      });
+
+      configureMode('mouse');
+    })();
+  </script>
+</body>
+</html>
