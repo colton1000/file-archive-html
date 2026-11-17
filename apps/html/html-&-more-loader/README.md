@@ -1,4 +1,4 @@
-\# Python HTML Studio
+## Python HTML Studio
 
 
 
@@ -6,7 +6,7 @@ A local, dependency-free project switcher. Python stores multiple named projects
 
 
 
-\## Start
+## Start
 
 
 
