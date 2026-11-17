@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Python HTML Studio</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff;font-family:Segoe UI,Arial,sans-serif}#stage{position:fixed;inset:0;border:0;width:100%;height:100%;background:white}.bar{position:fixed;z-index:9999;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:8px;align-items:center;padding:8px 10px;background:#111827e8;color:#fff;border:1px solid #334155;border-radius:12px;box-shadow:0 10px 30px #0005;transition:.2s}.bar.hidden{transform:translate(-50%,-80px)}select,button{font:inherit;color:#fff;background:#1e293b;border:1px solid #475569;border-radius:7px;padding:7px 10px}button{cursor:pointer}button:hover,select:hover{border-color:#38bdf8}.status{font-size:12px;color:#a7f3d0;min-width:95px}.handle{position:fixed;z-index:9998;top:0;left:50%;transform:translateX(-50%);width:90px;height:7px;background:#38bdf8;border-radius:0 0 6px 6px;cursor:pointer}.empty{display:grid;place-items:center;height:100%;color:#64748b;text-align:center}.empty b{display:block;color:#334155;font-size:24px;margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="handle" id="handle" title="Show or hide project bar"></div>
+<div class="bar" id="bar"><strong>Python Studio</strong><select id="projects"></select><button id="reload">Reload</button><button id="download">Download Project</button><button id="hide">Hide</button><span class="status" id="status">Connecting…</span></div>
+<iframe id="stage" sandbox="allow-scripts allow-forms allow-modals allow-popups allow-same-origin"></iframe>
+<script>
+const list=document.querySelector('#projects'),stage=document.querySelector('#stage'),statusEl=document.querySelector('#status'),bar=document.querySelector('#bar');
+let data={projects:[]};
+let projectsSnapshot=null,renderedProjectId=null,loadInProgress=false;
+function safeJSON(text){try{return JSON.parse(text)}catch{return null}}
+function render(project){
+ if(!project){stage.srcdoc='<div class="empty"><div><b>Blank page</b>Create a project with studio.py.</div></div>';renderedProjectId=null;return}
+ const css=(project.css||[]).map(x=>`<style data-name="${escapeAttr(x.name)}">${resolveIcons(x.code,project)}</style>`).join('\n');
+ const js=(project.javascript||[]).map(x=>{const code=resolveIcons(x.code||'',project).replace(/<\/script/gi,'<\\/script');return `<script data-name="${escapeAttr(x.name)}">${code}<\/script>`}).join('\n');
+ stage.srcdoc=`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${css}</head><body>${resolveIcons(project.html||'',project)}${js}</body></html>`;
+ renderedProjectId=project.id;
+ document.title=(project.name||'Blank')+' - Python HTML Studio';
+}
+function escapeAttr(s){return String(s||'').replaceAll('&','&amp;').replaceAll('"','&quot;')}
+function resolveIcons(source,project){
+ for(const icon of project.icons||[])source=source.replaceAll(`icon:${icon.name}`,`data:${icon.mime_type};base64,${icon.data}`);
+ return source;
+}
+function getSavedProject(){try{return localStorage.getItem('studioProject')}catch{return null}}
+async function load(preferred,forceRender=false){
+ if(loadInProgress)return;
+ loadInProgress=true;
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),5000);
+ try{
+  const r=await fetch('/api/projects?ts='+Date.now(),{signal:controller.signal});
+  if(!r.ok)throw Error('HTTP '+r.status);
+  const nextData=await r.json();
+  if(!nextData||!Array.isArray(nextData.projects))throw Error('Invalid project data');
+  const snapshot=JSON.stringify(nextData.projects),changed=snapshot!==projectsSnapshot;
+  const previousId=preferred||list.value||getSavedProject();
+  if(changed){
+   list.innerHTML='';
+   for(const p of nextData.projects){const o=document.createElement('option');o.value=p.id;o.textContent=p.name;list.appendChild(o)}
+  }
+  data=nextData;
+  const project=data.projects.find(p=>p.id===previousId)||data.projects[0];
+  if(project)list.value=project.id;
+  const selectedId=project?project.id:'';
+  if(forceRender||changed||selectedId!==renderedProjectId)render(project);
+  projectsSnapshot=snapshot;
+  statusEl.textContent='Connected';statusEl.title='';
+ }catch(e){
+  statusEl.textContent='Start studio.py';
+  statusEl.title=e.name==='AbortError'?'Connection timed out':e.message;
+  if(projectsSnapshot===null)render(null);
+ }finally{
+  clearTimeout(timeout);
+  loadInProgress=false;
+ }
+}
+list.onchange=()=>{try{localStorage.setItem('studioProject',list.value)}catch{}render(data.projects.find(p=>p.id===list.value))};
+document.querySelector('#reload').onclick=()=>load(list.value,true);document.querySelector('#download').onclick=()=>{if(list.value)location.href='/api/download/'+encodeURIComponent(list.value)};document.querySelector('#hide').onclick=()=>bar.classList.add('hidden');document.querySelector('#handle').onclick=()=>bar.classList.toggle('hidden');
+load();setInterval(()=>load(list.value),3000);
+</script>
+</body>
+</html>

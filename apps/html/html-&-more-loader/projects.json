@@ -1,0 +1,25 @@
+{
+  "projects": [
+    {
+      "id": "blank-page",
+      "name": "Blank Page",
+      "html": "",
+      "css": [
+        {
+          "name": "styles.css",
+          "code": "body { background: rgb(1, 2, 3); }\n"
+        }
+      ],
+      "javascript": [],
+      "icons": []
+    },
+    {
+      "id": "crypt",
+      "name": "crypt",
+      "html": "",
+      "css": [],
+      "javascript": [],
+      "icons": []
+    }
+  ]
+}
